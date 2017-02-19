@@ -10,11 +10,11 @@ class Node {
 	public int getNumber () {
 		return number;
 		}
-	public boolean addRelations (int numberNode) {
+	public boolean addRelations (Node node) {
 		for (Node i : relations)
-			if (i.getNumber () == numberNode)
+			if (i.getNumber () == node.getNumber ())
 				return false;
-		relations.add (new Node (numberNode));
+		relations.add (node);
 		return true;
 		}
 	public int countRelations () {
@@ -30,16 +30,16 @@ class NodesSystem {
 	NodesSystem () {
 		nodes = new ArrayList<>();
 		}
-	public boolean findNode (int numberNode) {
+	public boolean findNode (Node node) {
 		for (Node i : nodes)
-			if (i.getNumber () == numberNode)
+			if (i == node)
 				return true;
 		return false;
 		}
-	public boolean addNode (int numberNode) {
-		if (!(findNode (numberNode)))
+	public boolean addNode (Node node) {
+		if (findNode (node))
 			return false;
-		nodes.add (new Node (numberNode));
+		nodes.add (node);
 		return true;
 		}
 	public int countNodes () {
@@ -48,47 +48,60 @@ class NodesSystem {
 	public Node getNode (int numberRelations) {
 		return nodes.get (numberRelations);
 		}
-	public boolean union (int numberNodeFirst, int numberNodeSecond) {
-		if (!(findNode (numberNodeFirst) && findNode (numberNodeSecond)))
+	public boolean union (Node nodeFirst, Node nodeSecond) {
+		if (!(findNode (nodeFirst) && findNode (nodeSecond)))
 			return false;
 		for (Node i : nodes) {
-			if (i.getNumber () == numberNodeFirst)
-				if (!(i.addRelations (numberNodeSecond)))
+			if (i == nodeFirst)
+				if (!(i.addRelations (nodeSecond)))
 					return false;
-			if (i.getNumber () == numberNodeSecond)
-				if (!(i.addRelations (numberNodeFirst)))
+			if (i == nodeSecond)
+				if (!(i.addRelations (nodeFirst)))
 					return false;
 			}
 		return true;
 		}
-	public boolean find (int numberNodeFirst, int numberNodeSecond) {
-		if (!(findNode (numberNodeFirst) && findNode (numberNodeSecond)))
+	public boolean find (Node nodeFirst, Node nodeSecond) {
+		if (!(findNode (nodeFirst) && findNode (nodeSecond)))
 			return false;
+		int count = 0;
 		for (Node i : nodes) {
-			if (i.getNumber () == numberNodeFirst)
-				if (!(i.addRelations (numberNodeSecond)))
-					return true;
-			if (i.getNumber () == numberNodeSecond)
-				if (!(i.addRelations (numberNodeFirst)))
-					return true;
+			if (i == nodeFirst)
+				for (int j = 0; j < i.countRelations(); ++j)
+					if (i.getRelations(j) == nodeSecond)
+						++count;
+			if (i == nodeSecond)
+				for (int j = 0; j < i.countRelations(); ++j)
+					if (i.getRelations(j) == nodeFirst)
+						++count;
 			}
-		return false;
+		return count == 2;
 		}
 	}
 
 class Main {
     public static void main (String[] args) {
 		NodesSystem nodesSystem = new NodesSystem ();
-        System.out.println (nodesSystem.addNode (0));
-        nodesSystem.addNode (1);
-        nodesSystem.addNode (2);
-        nodesSystem.addNode (3);
-        nodesSystem.union (0, 1);
-        nodesSystem.union (0, 2);
-        nodesSystem.union (3, 4);
-        System.out.println(nodesSystem.countNodes ());
-        for (int i = 0; i < nodesSystem.countNodes (); ++i) {
-			System.out.printf ("%d ", nodesSystem.getNode(i).getNumber());
+		nodesSystem.addNode (new Node (0));
+		nodesSystem.addNode (new Node (1));
+		nodesSystem.addNode (new Node (2));
+		nodesSystem.addNode (new Node (3));
+		nodesSystem.addNode (new Node (4));
+		nodesSystem.union (nodesSystem.getNode(0), nodesSystem.getNode(1));
+		nodesSystem.union (nodesSystem.getNode(0), nodesSystem.getNode(2));
+		nodesSystem.union (nodesSystem.getNode(3), nodesSystem.getNode(4));
+		System.out.println ("Количество узлов в системе: " + nodesSystem.countNodes ());
+		System.out.println ("Связи: ");
+		for (int i = 0; i < nodesSystem.countNodes (); ++i) {
+			System.out.printf ("%d: ", nodesSystem.getNode(i).getNumber());
+			for (int j = 0; j < nodesSystem.getNode(i).countRelations(); ++j) {
+				System.out.printf ("%d ", nodesSystem.getNode(i).getRelations(j).getNumber());
+				}
+			System.out.printf ("\n");
 			}
+		System.out.printf ("Узел %d связан с %d: ", nodesSystem.getNode(0).getNumber(), nodesSystem.getNode(1).getNumber());
+		System.out.println (nodesSystem.find(nodesSystem.getNode(0), nodesSystem.getNode(1)));
+		System.out.printf ("Узел %d связан с %d: ", nodesSystem.getNode(0).getNumber(), nodesSystem.getNode(4).getNumber());
+		System.out.println (nodesSystem.find(nodesSystem.getNode(0), nodesSystem.getNode(4)));
 		}
 	}
